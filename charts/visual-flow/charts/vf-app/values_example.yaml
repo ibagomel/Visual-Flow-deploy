@@ -56,7 +56,7 @@ backend:
     # nodePort:
     annotations:
       # service.beta.openshift.io/serving-cert-secret-name: vf-backend-ssl
-  subPath: "/vf/be"
+  subPath: "/be"
   external:
     enabled: true
     type: ingress # route
@@ -94,7 +94,7 @@ frontend: # frontend part of app
     # nodePort:
     annotations:
       # service.beta.openshift.io/serving-cert-secret-name: vf-frontend-ssl
-  subPath: "/vf/ui/"
+  subPath: "/ui/"
   external:
     enabled: true
     type: ingress # route

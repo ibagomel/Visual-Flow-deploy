@@ -20,7 +20,7 @@ spec:
   - host: {{ .external.host }}
     http:
       paths:
-      - path: {{ default "/" .subPath }}
+      - path: "{{ default "/" .subPath }}*"
         pathType: Prefix
         backend:
           serviceName: {{ $.Release.Name }}-{{ $partName }}
