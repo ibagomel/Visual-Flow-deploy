@@ -74,38 +74,44 @@ AWS Load Balancer allows you to access applications on EKS from the Internet by 
 1. Clone or download the amazon branch from [the Visual-Flow-Deploy repository](https://github.com/ibagomel/Visual-Flow-deploy/tree/amazon).
 
 2. Go to the directory "[visual-flow](https://github.com/ibagomel/Visual-Flow-deploy/blob/amazon/charts/visual-flow)" of the "Visual-Flow-Deploy" repository with the following command:
-   
+
     `cd ./charts/visual-flow`
 
-3. Set the following values in values.yaml:
-   - SLACK_API_TOKEN - Token of the created Slack App in your Slack Workspace. The documentation on how to add the app in Slack and get API_TOKEN can be found on [Slack.com](https://slack.com/help/articles/215770388-Create-and-regenerate-API-tokens#bot-user-tokens).
-   - superusers - List of GitHub users nicknames with the superuser role.
-  
-    STRATEGY_CALLBACK_URL, GITHUB_APP_ID and GITHUB_APP_SECRET will be set later.
-   
+3. *(Optional)* Configure Slack notifications in values.yaml.
 
-4. Install the app using the updated values.yaml file with the following command:
+    In order to allow VF to send Slack notifications from a pipeline, VF needs to be added as a bot user to your Slack Workspace. The documentation on how to add a bot user in Slack and get the bot user token can be found on [Slack help page](https://slack.com/help/articles/215770388-Create-and-regenerate-API-tokens#bot-user-tokens). After generating token, update SLACK_API_TOKEN variable in values.yaml with the token generated.
+
+4. Set superusers in values.yaml.
+
+    New Visual Flow users will have no access in the app. The superusers(admins) need to be configured to manage user access. Specify the superusers' GitHub nicknames in values.yaml in the yaml list format:
+
+    ```yaml
+    superusers:
+      - your-github-nickname
+      - another-name
+    ```
+
+5. Install the app using the updated values.yaml file with the following command:
 
     `helm install vf-app . -f values.yaml`
 
-
-5. Check that the app is successfully installed and all pods are running with the following command:
+6. Check that the app is successfully installed and all pods are running with the following command:
 
     `kubectl get pods --all-namespaces`
 
-6. Get the generated app's hostname with the following command: 
-   
+7. Get the generated app's hostname with the following command:
+  
    `kubectl get svc vf-app-frontend -o yaml | grep hostname | cut -c 17-`
 
-7. Create a GitHub OAuth app:
+8. Create a GitHub OAuth app:
    1. Go to GitHub user's OAuth apps (`https://github.com/settings/developers`) or organization's OAuth apps (`https://github.com/organizations/<ORG_NAME>/settings/applications`).
    2. Click the Register a new application or the New OAuth App button.
    3. Fill the required fields (Set Authorization callback URL to `https://<HOSTNAME_FROM_SERVICE>/vf/ui/callback`), click the Register application button.
    4. Set the Client ID value to GITHUB_APP_ID in values.yaml.
    5. Click Generate a new client secret and set GITHUB_APP_SECRET in values.yaml to the value generated (Please note that you will not be able to see the full secret value later).
-   
-8. Complete the app's configuration:
-   
+
+9. Complete the app's configuration:
+
    1. Set STRATEGY_CALLBACK_URL in values.yaml to `https://<HOSTNAME_FROM_SERVICE>/vf/ui/callback`.
    2. Upgrade the app in EKS:
 
@@ -115,8 +121,8 @@ AWS Load Balancer allows you to access applications on EKS from the Internet by 
 
 ## Use Visual Flow
 
-1. Open the app's web page using the following link: 
-   
+1. Open the app's web page using the following link:
+
    `https://<HOSTNAME_FROM_SERVICE>/vf/ui/`
 
 2. For each project Visual Flow generates a new namespace. For each namespace, you should create a Fargate profile to allow running jobs and pipelines in the corresponding project. Create a Fargate profile with the following command:
@@ -133,11 +139,10 @@ AWS Load Balancer allows you to access applications on EKS from the Internet by 
 
     `kubectl get pods --all-namespaces`
 
-
 ## Delete EKS
 
 1. If the EKS is no longer required, you can delete it using the following command:
-   
+
     `eksctl delete cluster --region <REGION> --name <CLUSTER_NAME>`
 
     It can take about 10 minutes.
