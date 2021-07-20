@@ -71,9 +71,9 @@ AWS Load Balancer allows you to access applications on EKS from the Internet by 
 
 ## Install Visual Flow
 
-1. Clone or download the amazon branch from [the Visual-Flow-Deploy repository](https://github.com/ibagomel/Visual-Flow-deploy/tree/amazon).
+1. Clone or download the amazon branch from [the Visual-Flow-Deploy repository](https://github.com/ibagomel/Visual-Flow-deploy/tree/amazon) to your local computer.
 
-2. Go to the directory "[visual-flow](https://github.com/ibagomel/Visual-Flow-deploy/blob/amazon/charts/visual-flow)" of the "Visual-Flow-Deploy" repository with the following command:
+2. Go to the directory "[visual-flow](https://github.com/ibagomel/Visual-Flow-deploy/blob/amazon/charts/visual-flow)" of the downloaded "Visual-Flow-Deploy" repository with the following command:
 
     `cd ./charts/visual-flow`
 
