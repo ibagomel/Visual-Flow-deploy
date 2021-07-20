@@ -71,7 +71,7 @@ AWS Load Balancer allows you to access applications on EKS from the Internet by 
 
 ## Install Visual Flow
 
-1. Clone or download the amazon branch from [the Visual-Flow-Deploy repository](https://github.com/ibagomel/Visual-Flow-deploy/tree/amazon) to your local computer.
+1. Clone or download the amazon branch from [the Visual-Flow-Deploy repository](https://github.com/ibagomel/Visual-Flow-deploy/tree/amazon) on your local computer.
 
 2. Go to the directory "[visual-flow](https://github.com/ibagomel/Visual-Flow-deploy/blob/amazon/charts/visual-flow)" of the downloaded "Visual-Flow-Deploy" repository with the following command:
 
@@ -91,26 +91,32 @@ AWS Load Balancer allows you to access applications on EKS from the Internet by 
       - another-name
     ```
 
-5. Install the app using the updated values.yaml file with the following command:
+5. All Visual Flow users (including superusers) need active Github account in order to be authenticated in application. Setup Github profile as per following steps:
+
+    - Navigate to the account settings
+    - Go to "Emails" tab: set email as public by unchecking "Keep my email addresses private" checkbox
+    - Go to "Profile" tab: fill in "Name" and "Public email" fields
+
+6. Install the app using the updated values.yaml file with the following command:
 
     `helm install vf-app . -f values.yaml`
 
-6. Check that the app is successfully installed and all pods are running with the following command:
+7. Check that the app is successfully installed and all pods are running with the following command:
 
     `kubectl get pods --all-namespaces`
 
-7. Get the generated app's hostname with the following command:
+8. Get the generated app's hostname with the following command:
   
    `kubectl get svc vf-app-frontend -o yaml | grep hostname | cut -c 17-`
 
-8. Create a GitHub OAuth app:
+9. Create a GitHub OAuth app:
    1. Go to GitHub user's OAuth apps (`https://github.com/settings/developers`) or organization's OAuth apps (`https://github.com/organizations/<ORG_NAME>/settings/applications`).
    2. Click the Register a new application or the New OAuth App button.
    3. Fill the required fields (Set Authorization callback URL to `https://<HOSTNAME_FROM_SERVICE>/vf/ui/callback`), click the Register application button.
    4. Set the Client ID value to GITHUB_APP_ID in values.yaml.
    5. Click Generate a new client secret and set GITHUB_APP_SECRET in values.yaml to the value generated (Please note that you will not be able to see the full secret value later).
 
-9. Complete the app's configuration:
+10. Complete the app's configuration:
 
    1. Set STRATEGY_CALLBACK_URL in values.yaml to `https://<HOSTNAME_FROM_SERVICE>/vf/ui/callback`.
    2. Upgrade the app in EKS:
