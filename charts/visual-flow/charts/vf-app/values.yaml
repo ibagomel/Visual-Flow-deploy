@@ -9,12 +9,12 @@ backend:
   deployment:
     replicas: 1
     image:
-      repository: 709825985650.dkr.ecr.us-east-1.amazonaws.com/iba-group/visual-flow
-      tag: 0.9.2-backend
+      repository: ibagomel/visual-flow-backend
+      tag: latest
       pullPolicy: Always
     # variables:
     secretVariables:
-      KEYSTORE_PASS: "b4hAz8QYVJxDUpv"
+      KEYSTORE_PASS: "RANDOM_KEYSTORE_PASS"
       SLACK_API_TOKEN: ""
     sslSecret: vf-app-backend-ssl
     resources:
@@ -26,10 +26,10 @@ backend:
         memory: 2Gi
   configFile:
     oauth:
-      userInfo: "https://api.github.com/user" # "https://gitlab.okd.gomel.iba.by/api/v4/user"
+      userInfo: "https://api.github.com/user"
       fieldsMap:
         id: id
-        username: login # username
+        username: login
         name: name
         email: email
     superusers: []
@@ -39,76 +39,58 @@ backend:
       annotations: {}
     argoServerUrl: "http://vf-app-server:2746"
     sparkJob:
-      repository: 709825985650.dkr.ecr.us-east-1.amazonaws.com/iba-group/visual-flow
-      tag: 0.9.2-spark-job
+      repository: ibagomel/visual-flow-spark-job
+      tag: latest
       jobSA: spark
       jobRB: spark-edit
       addSA: true
       # kubernetesAPI: "k8s://https://kubernetes.default.svc.cluster.local"
     slackJob:
-      repository: 709825985650.dkr.ecr.us-east-1.amazonaws.com/iba-group/visual-flow
-      tag: 0.9.2-slack-notification
+      repository: ibagomel/visual-flow-slack-notification
+      tag: latest
       appAPItoken: "${SLACK_API_TOKEN}"
   service:
-    type: NodePort # ClusterIP
+    type: ClusterIP
     port: 8080
     # nodePort:
-    annotations:
-      # service.beta.openshift.io/serving-cert-secret-name: vf-app-backend-ssl
+    annotations: {}
   subPath: "/vf/be"
   external:
-    enabled: false
+    enabled: true
     type: ingress
     host: localhost
     annotations:
-      alb.ingress.kubernetes.io/backend-protocol: "HTTPS"
-      kubernetes.io/ingress.class: alb
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/group.name: visual-flow
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     ssl: {}
 
 frontend:
   deployment:
     replicas: 1
     image:
-      repository: 709825985650.dkr.ecr.us-east-1.amazonaws.com/iba-group/visual-flow
-      tag: 0.9.2-frontend
-      pullPolicy: Always
+      repository: ibagomel/visual-flow-frontend
+      tag: latest
+      pullPolicy: IfNotPresent
     variables:
       STRATEGY: GITHUB
       API_SERVER: "https://vf-app-backend:8080/vf/be/"
-      STRATEGY_CALLBACK_URL: ""
+      STRATEGY_CALLBACK_URL: "https://localhost/vf/ui/callback"
       GITHUB_STRATEGY_BASE_URL: "https://github.com"
     secretVariables:
       GITHUB_APP_ID: ""
       GITHUB_APP_SECRET: ""
-      SESSION_SECRET: "a597d68350b02f2d"
+      SESSION_SECRET: "RANDOM_SESSION_SECRET"
     sslSecret: vf-app-frontend-ssl
     resources: {}
   service:
-    type: LoadBalancer # NodePort # ClusterIP
+    type: ClusterIP
     port: 443
     # nodePort:
-    annotations:
-      # # service.beta.openshift.io/serving-cert-secret-name: vf-app-dev-frontend-ssl
-      # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: https
-      # # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: ""
-      # service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
-      # service.beta.kubernetes.io/aws-load-balancer-type: "nlb-ip"
+    annotations: {}
   subPath: "/vf/ui/"
   external:
-    enabled: false
+    enabled: true
     type: ingress
     host: localhost
     annotations:
-      alb.ingress.kubernetes.io/backend-protocol: HTTPS
-      kubernetes.io/ingress.class: alb
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/target-type: ip
-      # alb.ingress.kubernetes.io/group.name: visual-flow
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
-      alb.ingress.kubernetes.io/certificate-arn: ""
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     ssl: {}
-      # cert: |-
-      # key: |-
