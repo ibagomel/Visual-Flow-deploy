@@ -24,6 +24,9 @@ data:
           enabled: true
       servlet:
         context-path: "{{ default "/" .subPath }}"
+      error:
+        include-message: always
+        include-binding-errors: always
     oauth:
       url:
         userInfo: "{{ .configFile.oauth.userInfo }}"

@@ -98,6 +98,8 @@ You can set slack token in `configFile.slackJob.appAPItoken` but it is not recom
 It is recommended to set `configFile.slackJob.appAPItoken` to value `"${SLACK_API_TOKEN}"`
 and define `SLACK_API_TOKEN` variable in `secretVariables`.
 
+The documentation how to get the `SLACK_API_TOKEN` can be found [here](../../SLACK_NOTIFICATION.md).
+
 ### backend.configFile
 
 Appears in: [backend](#backend)
