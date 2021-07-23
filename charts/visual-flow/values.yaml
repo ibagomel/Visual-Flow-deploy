@@ -12,8 +12,8 @@ vf-app:
       variables:
         STRATEGY_CALLBACK_URL: "https://hostname/vf/ui/callback"
       secretVariables:
-        GITHUB_APP_ID: 
-        GITHUB_APP_SECRET: 
+        GITHUB_APP_ID: DUMMY_ID
+        GITHUB_APP_SECRET: DUMMY_SECRET
     service:
       annotations:
         service.beta.kubernetes.io/aws-load-balancer-backend-protocol: https
