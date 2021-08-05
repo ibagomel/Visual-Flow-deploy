@@ -4,10 +4,11 @@
 
 To install Visual Flow you should have the following software already installed:
 
-- AWS CLI (to install you can use the following link https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
-- kubectl (to install you can use the following link https://kubernetes.io/docs/tasks/tools/)
-- eksctl (to install you can use the following link https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html)
-- Helm CLI (to install you can use the following link https://helm.sh/docs/intro/install/)
+- AWS CLI (to install you can use the following link <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html>)
+- kubectl (to install you can use the following link <https://kubernetes.io/docs/tasks/tools/>)
+- eksctl (to install you can use the following link <https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html>)
+- Helm CLI (to install you can use the following link <https://helm.sh/docs/intro/install/>)
+- Git (to install you can use the following link <https://git-scm.com/downloads>)
 
 **IMPORTANT**: all the actions are recommended to be performed from the admin/root AWS account.
 
@@ -19,123 +20,127 @@ And enter the Access key ID and the Secret access key.
 
 ## Create an EKS Cluster
 
-Visual Flow should be installed on an EKS Cluster, if you do not have it, then you can install it as follows:
+Visual Flow should be installed on an EKS Cluster, if you do not have it, then create it using following guide:
 
-1. Create a cluster from a template using the following command:
+<https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html>
 
-    `eksctl create cluster --region <REGION> --name <CLUSTER_NAME> --fargate --full-ecr-access --alb-ingress-access`
-
-    It can take about 20 minutes
-
-2. Сheck with both commands that the cluster has been created:
-
-    ```bash
-    kubectl get nodes
-    kubectl get pods --all-namespaces
-    ```
-
-## Connect to existing EKS Cluster
+## Connect to existing EKS Cluster from local machine
 
 If you have an EKS Cluster, you can connect to it using the following command:
 
 `aws eks --region <REGION> update-kubeconfig --name <CLUSTER_NAME>`
 
-## Install an AWS Load Balancer (ALB) to EKS
-
-AWS Load Balancer allows you to access applications on EKS from the Internet by hostname.
-
-1. Create an IAM OIDC identity provider for your cluster with the following command:
-  
-    `eksctl utils associate-iam-oidc-provider --cluster <CLUSTER_NAME> --approve`
-
-2. Create AWSLoadBalancerControllerIAMPolicy if it does not exist in your account:
-
-    `aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.1.3/docs/install/iam_policy.json`
-
-3. Create an account for ALB with the following command:
-
-    `eksctl create iamserviceaccount --cluster=<CLUSTER_NAME> --namespace=kube-system --name=aws-load-balancer-controller --attach-policy-arn=<ARN_OF_AWSLoadBalancerControllerIAMPolicy> --override-existing-serviceaccounts --approve`
-
-4. For a new ALB installation, you should add an EKS Helm repository with the following command:
-
-    `helm repo add eks https://aws.github.io/eks-charts`
-
-5. Get the VPC_ID value with the following command:
-
-    `VPC_ID=$(eksctl utils describe-stacks --region=<REGION> --cluster=<CLUSTER_NAME> | grep vpc- | cut -d '"' -f 2)`
-
-6. Install aws-load-balancer-controller with the following command:
-
-    `helm install aws-load-balancer-controller eks/aws-load-balancer-controller --set clusterName=<CLUSTER_NAME> --set region=<REGION> --set vpcId=$VPC_ID --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller -n kube-system --version 1.1.6`
-
-7. Check that aws-load-balancer-controller has been successfully installed with the following command:
-
-    `kubectl get pods --all-namespaces`
-
 ## Install Visual Flow
 
-1. Clone or download the amazon branch from [the Visual-Flow-Deploy repository](https://github.com/ibagomel/Visual-Flow-deploy/tree/amazon) on your local computer.
+1. Clone (or download) the amazon branch from [the Visual-Flow-Deploy repository](https://github.com/ibagomel/Visual-Flow-deploy/tree/amazon) on your local computer using following command:
+
+    `git clone -b amazon https://github.com/ibagomel/Visual-Flow-deploy.git Visual-Flow-deploy`
 
 2. Go to the directory "[visual-flow](https://github.com/ibagomel/Visual-Flow-deploy/blob/amazon/charts/visual-flow)" of the downloaded "Visual-Flow-Deploy" repository with the following command:
 
-    `cd ./charts/visual-flow`
+    `cd Visual-Flow-deploy/charts/visual-flow`
 
-3. *(Optional)* Configure Slack notifications in [values.yaml](./charts/visual-flow/values.yaml).
+3. *(Optional)* Configure Slack notifications in [values.yaml](./charts/visual-flow/values.yaml) using following guide:
 
-    How to allow VF to send Slack notifications from a pipeline can be found [here](https://github.com/ibagomel/Visual-Flow-deploy/blob/main/SLACK_NOTIFICATION.md).
+    <https://github.com/ibagomel/Visual-Flow-deploy/blob/main/SLACK_NOTIFICATION.md>
 
 4. Set superusers in [values.yaml](./charts/visual-flow/values.yaml).
 
-    New Visual Flow users will have no access in the app. The superusers(admins) need to be configured to manage user access. Specify the superusers' GitHub nicknames in [values.yaml](./charts/visual-flow/values.yaml) in the yaml list format:
+    New Visual Flow users will have no access in the app. The superusers(admins) need to be configured to manage user access. Specify the superusers real GitHub nicknames in [values.yaml](./charts/visual-flow/values.yaml) in the yaml list format:
 
     ```yaml
     superusers:
       - your-github-nickname
-      - another-name
     ```
 
-5. Install the app using the updated values.yaml file with the following command:
+5. If you have installed kube-metrics then update values.yaml file according to the example below.
+
+    1. Check that the kube-metrics installed using the following command:
+
+        ```bash
+        kubectl top pods
+        ```
+
+        Output if the kube-metrics isn't installed:
+
+        `error: Metrics API not available`
+
+        If the kube-metrics isn't installed then go to step 6.
+
+    2. Edit [values.yaml](./charts/visual-flow/values.yaml) file according to the example below:
+
+        ```yaml
+        ...
+        kube-metrics:
+          install: false
+        ```
+
+6. If you have installed Argo workflows then update values.yaml file according to the example below.
+
+    1. Check that the Argo workflows installed using the following command:
+
+        ```bash
+        kubectl get workflow
+        ```
+
+        Output if the Argo workflows isn't installed:
+
+        `error: the server doesn't have a resource type "workflow"`
+
+        If the Argo workflows isn't installed then go to step 7.
+
+    2. Edit [values.yaml](./charts/visual-flow/values.yaml) file according to the example below:
+
+        ```yaml
+        ...
+        argo:
+          install: false
+        vf-app:
+          backend:
+            configFile:
+              argoServerUrl: <Argo-Server-URL>
+        ```
+
+7. Create a GitHub OAuth app:
+
+    1. Go to GitHub user's OAuth apps (`https://github.com/settings/developers`) or organization's OAuth apps (`https://github.com/organizations/<ORG_NAME>/settings/applications`).
+    2. Click the **Register a new application** or the **New OAuth App** button.
+    3. Fill the required fields:
+        - Set **Homepage URL** to `https://localhost/vf/ui/`
+        - Set **Authorization callback URL** to `https://localhost/vf/ui/callback`
+    4. Click the **Register application** button.
+    5. Replace "DUMMY_ID" with the Client ID value in [values.yaml](./charts/visual-flow/values.yaml).
+    6. Click **Generate a new client secret** and replace in [values.yaml](./charts/visual-flow/values.yaml) "DUMMY_SECRET" with the generated Client secret value  (Please note that you will not be able to see the full secret value later).
+
+8. Install the app using the updated [values.yaml](./charts/visual-flow/values.yaml) file with the following command:
 
     `helm install vf-app . -f values.yaml`
 
-6. Check that the app is successfully installed and all pods are running with the following command:
+9. Check that the app is successfully installed and all pods are running with the following command:
 
     `kubectl get pods --all-namespaces`
-
-7. Get the generated app's hostname with the following command:
-
-    `kubectl get svc vf-app-frontend -o yaml | grep hostname | cut -c 17-`
-
-8. Create a GitHub OAuth app:
-
-    1. Go to GitHub user's OAuth apps (`https://github.com/settings/developers`) or organization's OAuth apps (`https://github.com/organizations/<ORG_NAME>/settings/applications`).
-    2. Click the Register a new application or the New OAuth App button.
-    3. Fill the required fields (Set Authorization callback URL to `https://<HOSTNAME_FROM_SERVICE>/vf/ui/callback`), click the Register application button.
-    4. Set the Client ID value to GITHUB_APP_ID in values.yaml.
-    5. Click Generate a new client secret and set GITHUB_APP_SECRET in values.yaml to the value generated (Please note that you will not be able to see the full secret value later).
-
-9. Complete the app's configuration:
-
-    1. Set STRATEGY_CALLBACK_URL in values.yaml to `https://<HOSTNAME_FROM_SERVICE>/vf/ui/callback`.
-    2. Upgrade the app in EKS:
-
-        `helm upgrade vf-app . -f values.yaml`
-
-    3. Wait until the update is installed and all pods are running.
 
 ## Use Visual Flow
 
 1. All Visual Flow users (including superusers) need active Github account in order to be authenticated in application. Setup Github profile as per following steps:
 
-    1. Navigate to the account settings
-    2. Go to "Emails" tab: set email as public by unchecking "Keep my email addresses private" checkbox
-    3. Go to "Profile" tab: fill in "Name" and "Public email" fields
+    1. Navigate to the [account settings](https://github.com/settings/profile)
+    2. Go to **Emails** tab: set email as public by unchecking **Keep my email addresses private** checkbox
+    3. Go to **Profile** tab: fill in **Name** and **Public email** fields
 
-2. Open the app's web page using the following link:
+2. Start port forwarding to get access to app with the following command:
 
-    `https://<HOSTNAME_FROM_SERVICE>/vf/ui/`
+    ```bash
+    kubectl port-forward svc/vf-app-frontend 443:443
+    ```
 
-3. For each project Visual Flow generates a new namespace. For each namespace, you should create a Fargate profile to allow running jobs and pipelines in the corresponding project. Create a Fargate profile with the following command:
+3. Open the app's web page using the following link:
+
+    `https://localhost/vf/ui/`
+
+4. See the guide on how to work with the Visual Flow at the following link: <https://github.com/ibagomel/Visual-Flow/blob/main/Visual%20Flow%20User%20Guide%20V0.4.pdf>
+
+5. For each project Visual Flow generates a new namespace. For each namespace, you should create a Fargate profile to allow running jobs and pipelines in the corresponding project. Create a Fargate profile with the following command:
 
     `eksctl create fargateprofile --cluster <CLUSTER_NAME> --region <REGION> --name vf-app --namespace <NAMESPACE>`
 
@@ -145,18 +150,8 @@ AWS Load Balancer allows you to access applications on EKS from the Internet by 
 
     `helm uninstall vf-app`
 
-2. Check that everything was successfully deleted with the command:
-
-    `kubectl get pods --all-namespaces`
-
 ## Delete EKS
 
-1. If the EKS is no longer required, you can delete it using the following command:
+1. If the EKS is no longer required, you can delete it using the following guide:
 
-    `eksctl delete cluster --region <REGION> --name <CLUSTER_NAME>`
-
-    It can take about 10 minutes.
-
-2. You can check that everything was successfully deleted here: 
-
-    `https://console.aws.amazon.com/cloudformation/home?region=<REGION>#/stacks`
+    <https://docs.aws.amazon.com/eks/latest/userguide/delete-cluster.html>

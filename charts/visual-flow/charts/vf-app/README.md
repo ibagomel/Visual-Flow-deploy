@@ -249,7 +249,7 @@ Appears in: [backend](#backend), [frontend](#frontend)
 
 `type` supports following values:
 
-- `ingress` - Ingress (networking.k8s.io/v1beta1)
+- `ingress` - Ingress (networking.k8s.io/v1)
 - `route` - Route (route.openshift.io/v1)
 
 If you are using nginx as Ingress, you should set following annotation to send ssl traffic to Service:

@@ -50,7 +50,7 @@ backend:
       tag: 0.9.3-slack-notification
       appAPItoken: "${SLACK_API_TOKEN}"
   service:
-    type: NodePort # ClusterIP
+    type: ClusterIP
     port: 8080
     # nodePort:
     annotations: {}
@@ -59,12 +59,7 @@ backend:
     enabled: false
     type: ingress
     host: localhost
-    annotations:
-      alb.ingress.kubernetes.io/backend-protocol: "HTTPS"
-      kubernetes.io/ingress.class: alb
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/group.name: visual-flow
+    annotations: {}
     ssl: {}
 
 frontend:
@@ -77,7 +72,7 @@ frontend:
     variables:
       STRATEGY: GITHUB
       API_SERVER: "https://vf-app-backend:8080/vf/be/"
-      STRATEGY_CALLBACK_URL: ""
+      STRATEGY_CALLBACK_URL: "https://localhost/vf/ui/callback"
       GITHUB_STRATEGY_BASE_URL: "https://github.com"
     secretVariables:
       GITHUB_APP_ID: ""
@@ -86,7 +81,7 @@ frontend:
     sslSecret: vf-app-frontend-ssl
     resources: {}
   service:
-    type: LoadBalancer
+    type: ClusterIP
     port: 443
     # nodePort:
     annotations: {}
@@ -95,11 +90,5 @@ frontend:
     enabled: false
     type: ingress
     host: localhost
-    annotations:
-      alb.ingress.kubernetes.io/backend-protocol: HTTPS
-      kubernetes.io/ingress.class: alb
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
-      alb.ingress.kubernetes.io/certificate-arn: ""
+    annotations: {}
     ssl: {}
