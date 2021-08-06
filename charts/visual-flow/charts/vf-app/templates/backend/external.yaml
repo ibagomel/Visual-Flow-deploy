@@ -4,7 +4,7 @@
 {{- if .external.enabled }}
 
 {{- if eq .external.type "ingress" }}
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ $.Release.Name }}-{{ $partName }}
@@ -23,8 +23,10 @@ spec:
       - path: {{ default "/" .subPath }}
         pathType: Prefix
         backend:
-          serviceName: {{ $.Release.Name }}-{{ $partName }}
-          servicePort: {{ .service.port }}
+          service:
+            name: {{ $.Release.Name }}-{{ $partName }}
+            port:
+              number: {{ .service.port }}
   tls:
     - hosts:
         - {{ .external.host }}

@@ -4,9 +4,9 @@
 
 To install Visual Flow you should have the following software already installed:
 
-- Docker Desktop on Windows (to install you can use the following link https://docs.docker.com/docker-for-windows/install/)
-- kubectl (to install you can use the following link https://kubernetes.io/docs/tasks/tools/)
-- Helm CLI (to install you can use the following link https://helm.sh/docs/intro/install/)
+- Docker Desktop on Windows (to install you can use the following link <https://docs.docker.com/docker-for-windows/install/>)
+- kubectl (to install you can use the following link <https://kubernetes.io/docs/tasks/tools/>)
+- Helm CLI (to install you can use the following link <https://helm.sh/docs/intro/install/>)
 
 ## Create an Kubernetes cluster
 
@@ -72,7 +72,9 @@ Visual Flow should be installed on an Kubernetes cluster, if you do not have it,
 
 2. Open the app's web page using the following link:
 
-    https://localhost/vf/ui/
+    <https://localhost/vf/ui/>
+
+3. See the guide on how to work with the Visual Flow at the following link: [Visual_Flow_User_Guide.pdf](https://github.com/ibagomel/Visual-Flow/blob/main/Visual_Flow_User_Guide.pdf)
 
 ## Delete Visual Flow
 
@@ -80,12 +82,8 @@ Visual Flow should be installed on an Kubernetes cluster, if you do not have it,
 
     `helm uninstall vf-app`
 
-2. Check that everything was successfully deleted with the command:
-
-    `kubectl get pods --all-namespaces`
-
 ## Delete Kubernetes
 
 1. If the Kubernetes is no longer required, you can delete it using the following link:
 
-    https://docs.docker.com/desktop/kubernetes/#disable-kubernetes
+    <https://docs.docker.com/desktop/kubernetes/#disable-kubernetes>
