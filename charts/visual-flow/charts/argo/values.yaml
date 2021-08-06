@@ -263,7 +263,8 @@ server:
   extraEnv: []
 
   # Extra arguments to provide to the Argo server binary.
-  extraArgs: []
+  extraArgs:
+    - --auth-mode=server
 
   ## Additional volumes to the server main container.
   volumeMounts: []

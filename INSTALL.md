@@ -138,7 +138,7 @@ If you have an EKS Cluster, you can connect to it using the following command:
 
     `https://localhost/vf/ui/`
 
-4. See the guide on how to work with the Visual Flow at the following link: <https://github.com/ibagomel/Visual-Flow/blob/main/Visual%20Flow%20User%20Guide%20V0.4.pdf>
+4. See the guide on how to work with the Visual Flow at the following link: [Visual_Flow_User_Guide.pdf](https://github.com/ibagomel/Visual-Flow/blob/main/Visual_Flow_User_Guide.pdf)
 
 5. For each project Visual Flow generates a new namespace. For each namespace, you should create a Fargate profile to allow running jobs and pipelines in the corresponding project. Create a Fargate profile with the following command:
 
