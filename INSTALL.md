@@ -4,31 +4,53 @@
 
 To install Visual Flow you should have the following software already installed:
 
-- AWS CLI (to install you can use the following link <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html>)
-- kubectl (to install you can use the following link <https://kubernetes.io/docs/tasks/tools/>)
-- eksctl (to install you can use the following link <https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html>)
-- Helm CLI (to install you can use the following link <https://helm.sh/docs/intro/install/>)
-- Git (to install you can use the following link <https://git-scm.com/downloads>)
+- AWS CLI ([install](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html))
+- kubectl [install](https://kubernetes.io/docs/tasks/tools/))
+- eksctl ([install](https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html))
+- Helm CLI ([install](https://helm.sh/docs/intro/install/))
+- Git ([install](https://git-scm.com/downloads))
 
 **IMPORTANT**: all the actions are recommended to be performed from the admin/root AWS account.
 
-If you have just installed the AWS CLI, then you need to log in:
+If you have just installed the AWS CLI, then you need to log in using following command:
 
 `aws configure`
 
-And enter the Access key ID and the Secret access key.
+## Create an EKS cluster
 
-## Create an EKS Cluster
-
-Visual Flow should be installed on an EKS Cluster, if you do not have it, then create it using following guide:
+Visual Flow should be installed on an EKS cluster, if you do not have it, then create it using following guide:
 
 <https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html>
 
-## Connect to existing EKS Cluster from local machine
+## Connect to existing EKS cluster from local machine
 
-If you have an EKS Cluster, you can connect to it using the following command:
+If you have an EKS cluster, you can connect to it using the following command:
 
 `aws eks --region <REGION> update-kubeconfig --name <CLUSTER_NAME>`
+
+## Check access to EKS cluster
+
+Run the following command to check access to the EKS cluster from the local machine:
+
+`kubectl get nodes`
+
+If you get the message "`error: You must be logged in to the server (Unauthorized)`", you can try to fix it using the following guide:
+
+<https://aws.amazon.com/premiumsupport/knowledge-center/eks-api-server-unauthorized-error/>
+
+If you have access to the EKS cluster on a different computer, you can try to copy the credentials from that computer and log into the AWS CLI on your local computer using the copied credentials. After that, reconnect to the ECS cluster ([previous chapter](#connect-to-existing-eks-cluster-from-local-machine)).
+
+## Install an AWS Load Balancer (ALB) to EKS
+
+AWS Load Balancer allows you to access applications on EKS from the Internet by hostname. If you don't have it installed, then install it using following guide:
+
+<https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html>
+
+**IMPORTANT:** The application has been tested with load balancer helm chart version 1.1.6. We strongly recommend to install load balancer helm chart version 1.1.6 to avoid unexpected issues. You can install the load balancer helm chart of the required version by executing the following command in step 5d in the guide on the link above:
+
+```bash
+helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller --set clusterName=<CLUSTER_NAME> --set region=<REGION> --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller -n kube-system --version 1.1.6
+```
 
 ## Install Visual Flow
 
@@ -101,22 +123,38 @@ If you have an EKS Cluster, you can connect to it using the following command:
               argoServerUrl: <Argo-Server-URL>
         ```
 
-7. Create a GitHub OAuth app:
+7. Install the app using the updated [values.yaml](./charts/visual-flow/values.yaml) file with the following command:
+
+    `helm install vf-app . -f values.yaml`
+
+8. Check that the app is successfully installed and all pods are running with the following command:
+
+    `kubectl get pods --all-namespaces`
+
+9. Get the generated app's hostname with the following command:
+
+    `kubectl get svc vf-app-frontend -o yaml | grep hostname | cut -c 17-`
+
+    Replace the string `<HOSTNAME_FROM_SERVICE>` with the generated hostname in the next steps.
+
+10. Create a GitHub OAuth app:
 
     1. Go to GitHub user's OAuth apps (`https://github.com/settings/developers`) or organization's OAuth apps (`https://github.com/organizations/<ORG_NAME>/settings/applications`).
     2. Click the **Register a new application** or the **New OAuth App** button.
     3. Fill the required fields:
-        - Set **Homepage URL** to `https://localhost/vf/ui/`
-        - Set **Authorization callback URL** to `https://localhost/vf/ui/callback`
+        - Set **Homepage URL** to `https://<HOSTNAME_FROM_SERVICE>/vf/ui/`
+        - Set **Authorization callback URL** to `https://<HOSTNAME_FROM_SERVICE>/vf/ui/callback`
     4. Click the **Register application** button.
     5. Replace "DUMMY_ID" with the Client ID value in [values.yaml](./charts/visual-flow/values.yaml).
-    6. Click **Generate a new client secret** and replace in [values.yaml](./charts/visual-flow/values.yaml) "DUMMY_SECRET" with the generated Client secret value  (Please note that you will not be able to see the full secret value later).
+    6. Click **Generate a new client secret** and replace in [values.yaml](./charts/visual-flow/values.yaml) "DUMMY_SECRET" with the generated Client secret value (Please note that you will not be able to see the full secret value later).
 
-8. Install the app using the updated [values.yaml](./charts/visual-flow/values.yaml) file with the following command:
+11. Update STRATEGY_CALLBACK_URL value in [values.yaml](./charts/visual-flow/values.yaml) to `https://<HOSTNAME_FROM_SERVICE>/vf/ui/callback`
 
-    `helm install vf-app . -f values.yaml`
+12. Upgrade the app in EKS cluster using updated values.yaml:
 
-9. Check that the app is successfully installed and all pods are running with the following command:
+    `helm upgrade vf-app . -f values.yaml`
+
+13. Wait until the update is installed and all pods are running:
 
     `kubectl get pods --all-namespaces`
 
@@ -128,19 +166,13 @@ If you have an EKS Cluster, you can connect to it using the following command:
     2. Go to **Emails** tab: set email as public by unchecking **Keep my email addresses private** checkbox
     3. Go to **Profile** tab: fill in **Name** and **Public email** fields
 
-2. Start port forwarding to get access to app with the following command:
+2. Open the app's web page using the following link:
 
-    ```bash
-    kubectl port-forward svc/vf-app-frontend 443:443
-    ```
+    `https://<HOSTNAME_FROM_SERVICE>/vf/ui/`
 
-3. Open the app's web page using the following link:
+3. See the guide on how to work with the Visual Flow at the following link: [Visual_Flow_User_Guide.pdf](https://github.com/ibagomel/Visual-Flow/blob/main/Visual_Flow_User_Guide.pdf)
 
-    `https://localhost/vf/ui/`
-
-4. See the guide on how to work with the Visual Flow at the following link: [Visual_Flow_User_Guide.pdf](https://github.com/ibagomel/Visual-Flow/blob/main/Visual_Flow_User_Guide.pdf)
-
-5. For each project Visual Flow generates a new namespace. For each namespace, you should create a Fargate profile to allow running jobs and pipelines in the corresponding project. Create a Fargate profile with the following command:
+4. For each project Visual Flow generates a new namespace. For each namespace, you should create a Fargate profile to allow running jobs and pipelines in the corresponding project. Create a Fargate profile with the following command:
 
     `eksctl create fargateprofile --cluster <CLUSTER_NAME> --region <REGION> --name vf-app --namespace <NAMESPACE>`
 
@@ -149,6 +181,10 @@ If you have an EKS Cluster, you can connect to it using the following command:
 1. If the app is no longer required, you can delete it using the following command:
 
     `helm uninstall vf-app`
+
+2. Check that everything was successfully deleted with the command:
+
+    `kubectl get pods --all-namespaces`
 
 ## Delete EKS
 

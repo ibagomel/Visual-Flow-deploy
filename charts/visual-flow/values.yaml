@@ -7,9 +7,11 @@ vf-app:
         SLACK_API_TOKEN: ""
     configFile:
       superusers:
-       - your-github-nickname
+        - your-github-nickname
   frontend:
     deployment:
+      variables:
+        STRATEGY_CALLBACK_URL: "https://hostname/vf/ui/callback"
       secretVariables:
         GITHUB_APP_ID: "DUMMY_ID"
         GITHUB_APP_SECRET: "DUMMY_SECRET"

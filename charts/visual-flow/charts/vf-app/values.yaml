@@ -50,7 +50,7 @@ backend:
       tag: 0.9.4-slack-notification
       appAPItoken: "${SLACK_API_TOKEN}"
   service:
-    type: ClusterIP
+    type: NodePort
     port: 8080
     # nodePort:
     annotations: {}
@@ -81,10 +81,13 @@ frontend:
     sslSecret: vf-app-frontend-ssl
     resources: {}
   service:
-    type: ClusterIP
+    type: LoadBalancer
     port: 443
     # nodePort:
-    annotations: {}
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: https
+      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb-ip"
   subPath: "/vf/ui/"
   external:
     enabled: false
