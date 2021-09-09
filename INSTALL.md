@@ -18,7 +18,26 @@ If you have just installed the AWS CLI, then you need to log in using following 
 
 ## Create an EKS cluster
 
-Visual Flow should be installed on an EKS cluster, if you do not have it, then create it using following guide:
+Visual Flow should be installed on an EKS cluster, you can create cluster using following commands:
+
+```bash
+export CLUSTER_NAME=visual-flow
+eksctl create cluster --region us-east-1 --name $CLUSTER_NAME --fargate --full-ecr-access --alb-ingress-access --zones us-east-1c,us-east-1d
+# duration: ~20min
+# if creation failed delete cluster using following command and repeat from beginning
+# eksctl delete cluster --region us-east-1 --name $CLUSTER_NAME
+
+# attach oidc
+aws iam list-open-id-connect-providers
+eksctl utils associate-iam-oidc-provider --cluster $CLUSTER_NAME --approve
+aws iam list-open-id-connect-providers
+
+# check access
+kubectl get nodes
+kubectl get pods --all-namespaces
+```
+
+For additional info check following guide:
 
 <https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html>
 
@@ -38,7 +57,13 @@ If you get the message "`error: You must be logged in to the server (Unauthorize
 
 <https://aws.amazon.com/premiumsupport/knowledge-center/eks-api-server-unauthorized-error/>
 
-If you have access to the EKS cluster on a different computer, you can try to copy the credentials from that computer and log into the AWS CLI on your local computer using the copied credentials. After that, reconnect to the ECS cluster ([previous chapter](#connect-to-existing-eks-cluster-from-local-machine)).
+If you have access to the EKS cluster on a different computer, you can on another computer try to provide access to the cluster for the local machine using the following guide:
+
+<https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html>
+
+For more information on how to use EKS on fargate check the following guide:
+
+<https://docs.aws.amazon.com/eks/latest/userguide/fargate-getting-started.html>
 
 ## Install an AWS Load Balancer (ALB) to EKS
 
@@ -49,7 +74,21 @@ AWS Load Balancer allows you to access applications on EKS from the Internet by 
 **IMPORTANT:** The application has been tested with load balancer helm chart version 1.1.6. We strongly recommend to install load balancer helm chart version 1.1.6 to avoid unexpected issues. You can install the load balancer helm chart of the required version by executing the following command in step 5d in the guide on the link above:
 
 ```bash
-helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller --set clusterName=<CLUSTER_NAME> --set region=<REGION> --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller -n kube-system --version 1.1.6
+# add ALB policy
+curl -o iam_policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.2.0/docs/install/iam_policy.json
+# the following command will fail if the policy exists
+aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file://iam_policy.json
+# create SA for ALB
+export ACCOUNT_ID=<ACCOUNT_ID>
+eksctl create iamserviceaccount --cluster=$CLUSTER_NAME --namespace=kube-system --name=aws-load-balancer-controller --attach-policy-arn=arn:aws:iam::${ACCOUNT_ID}:policy/AWSLoadBalancerControllerIAMPolicy --override-existing-serviceaccounts --approve
+# install ALB via helm chart
+helm repo add eks https://aws.github.io/eks-charts
+helm repo update
+# set correct VPC ID for ALB
+VPC_ID=$(eksctl utils describe-stacks --region=us-east-1 --cluster=$CLUSTER_NAME | grep vpc- | cut -d '"' -f 2)
+helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller --set clusterName=$CLUSTER_NAME --set region=us-east-1 --set vpcId=$VPC_ID --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller -n kube-system --version 1.1.6
+# wait until all pods will be ready
+kubectl get pods --all-namespaces
 ```
 
 ## Install Visual Flow
