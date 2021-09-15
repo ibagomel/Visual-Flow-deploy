@@ -211,7 +211,13 @@ kubectl get pods --all-namespaces
 
 3. See the guide on how to work with the Visual Flow at the following link: [Visual_Flow_User_Guide.pdf](https://github.com/ibagomel/Visual-Flow/blob/main/Visual_Flow_User_Guide.pdf)
 
-4. For each project Visual Flow generates a new namespace. For each namespace, you should create a Fargate profile to allow running jobs and pipelines in the corresponding project. Create a Fargate profile with the following command:
+4. For each project Visual Flow generates a new namespace. For each namespace, you should create a Fargate profile to allow running jobs and pipelines in the corresponding project.
+
+   First, create the project in the app, open it and check the URL of the page. It will have the following format:
+
+   `https://<HOSTNAME_FROM_SERVICE>/vf/ui/<NAMESPACE>/overview`
+
+   Get namespace from this URL and use in the following command to create fargate profile:
 
     `eksctl create fargateprofile --cluster <CLUSTER_NAME> --region <REGION> --name vf-app --namespace <NAMESPACE>`
 
