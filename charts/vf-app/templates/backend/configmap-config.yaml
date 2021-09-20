@@ -55,7 +55,6 @@ data:
       slack:
         image: "{{ .configFile.slackJob.repository }}:{{ .configFile.slackJob.tag }}"
         apiToken: {{ .configFile.slackJob.appAPItoken }}
-    argo:
-      serverUrl: "{{ .configFile.argoServerUrl }}"
+    argo: {{- toYaml .configFile.argo | nindent 6 }}
 {{- end }}
 {{- end }}
