@@ -37,7 +37,14 @@ backend:
       label: vf-app
       prefix: "vf-"
       annotations: {}
-    argoServerUrl: "http://vf-app-server:2746"
+    argo:
+      serverUrl: "http://argo-server.<namespace>.svc:2746"
+      limits:
+        cpu: 0.5
+        memory: 512Mi
+      requests:
+        cpu: 0.1
+        memory: 64Mi
     sparkJob:
       repository: ibagomel/visual-flow-spark-job
       tag: latest
