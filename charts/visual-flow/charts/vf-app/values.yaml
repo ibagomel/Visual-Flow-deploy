@@ -38,7 +38,7 @@ backend:
       prefix: "vf-"
       annotations: {}
     argo:
-      serverUrl: "http://argo-server.<namespace>.svc:2746"
+      serverUrl: "http://vf-app-argo-server.svc:2746"
       limits:
         cpu: 0.5
         memory: 512Mi

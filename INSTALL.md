@@ -18,19 +18,14 @@ If you have just installed the AWS CLI, then you need to log in using following 
 
 ## Create an EKS cluster
 
-Visual Flow should be installed on an EKS cluster, you can create cluster using following commands:
+Visual Flow should be installed on an EKS cluster. You can create cluster using following commands:
 
 ```bash
 export CLUSTER_NAME=visual-flow
-eksctl create cluster --region us-east-1 --name $CLUSTER_NAME --fargate --full-ecr-access --alb-ingress-access --zones us-east-1c,us-east-1d
+eksctl create cluster --region us-east-1 --name $CLUSTER_NAME --fargate --full-ecr-access --with-oidc --external-dns-access --alb-ingress-access --zones us-east-1c,us-east-1d
 # duration: ~20min
 # if creation failed delete cluster using following command and repeat from beginning
 # eksctl delete cluster --region us-east-1 --name $CLUSTER_NAME
-
-# attach oidc
-aws iam list-open-id-connect-providers
-eksctl utils associate-iam-oidc-provider --cluster $CLUSTER_NAME --approve
-aws iam list-open-id-connect-providers
 
 # check access
 kubectl get nodes
@@ -67,29 +62,28 @@ For more information on how to use EKS on fargate check the following guide:
 
 ## Install an AWS Load Balancer (ALB) to EKS
 
-AWS Load Balancer allows you to access applications on EKS from the Internet by hostname. If you don't have it installed, then install it using following guide:
-
-<https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html>
-
-**IMPORTANT:** The application has been tested with load balancer helm chart version 1.1.6. We strongly recommend to install load balancer helm chart version 1.1.6 to avoid unexpected issues. You can install the load balancer helm chart of the required version by executing the following command in step 5d in the guide on the link above:
+AWS Load Balancer allows you to access applications on EKS from the Internet by hostname. If you don't have it installed, then install it. You can install ALB using following commands:
 
 ```bash
 # add ALB policy
-curl -o iam_policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.2.0/docs/install/iam_policy.json
-# the following command will fail if the policy exists
+curl -o iam_policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.2.1/docs/install/iam_policy.json
+# the following command will fail if the policy already exists
 aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file://iam_policy.json
 # create SA for ALB
 export ACCOUNT_ID=<ACCOUNT_ID>
 eksctl create iamserviceaccount --cluster=$CLUSTER_NAME --namespace=kube-system --name=aws-load-balancer-controller --attach-policy-arn=arn:aws:iam::${ACCOUNT_ID}:policy/AWSLoadBalancerControllerIAMPolicy --override-existing-serviceaccounts --approve
 # install ALB via helm chart
-helm repo add eks https://aws.github.io/eks-charts
-helm repo update
+helm repo add eks https://aws.github.io/eks-charts || helm repo update
 # set correct VPC ID for ALB
 VPC_ID=$(eksctl utils describe-stacks --region=us-east-1 --cluster=$CLUSTER_NAME | grep vpc- | cut -d '"' -f 2)
 helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller --set clusterName=$CLUSTER_NAME --set region=us-east-1 --set vpcId=$VPC_ID --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller -n kube-system --version 1.1.6
 # wait until all pods will be ready
 kubectl get pods --all-namespaces
 ```
+
+For additional info check following guide:
+
+<https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html>
 
 ## Install Visual Flow
 
@@ -112,6 +106,7 @@ kubectl get pods --all-namespaces
     ```yaml
     superusers:
       - your-github-nickname
+      # - another-superuser-nickname
     ```
 
 5. If you have installed kube-metrics then update values.yaml file according to the example below.
