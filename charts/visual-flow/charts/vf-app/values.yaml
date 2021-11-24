@@ -10,7 +10,7 @@ backend:
     replicas: 1
     image:
       repository: 709825985650.dkr.ecr.us-east-1.amazonaws.com/iba-group/visual-flow
-      tag: 0.9.9-backend
+      tag: 0.9.10-backend
       pullPolicy: Always
     # variables:
     secretVariables:
@@ -47,14 +47,14 @@ backend:
         memory: 64Mi
     sparkJob:
       repository: 709825985650.dkr.ecr.us-east-1.amazonaws.com/iba-group/visual-flow
-      tag: 0.9.9-spark-job
+      tag: 0.9.10-spark-job
       jobSA: spark
       jobRB: spark-edit
       addSA: true
       # kubernetesAPI: "k8s://https://kubernetes.default.svc.cluster.local"
     slackJob:
       repository: 709825985650.dkr.ecr.us-east-1.amazonaws.com/iba-group/visual-flow
-      tag: 0.9.9-slack-notification
+      tag: 0.9.10-slack-notification
       appAPItoken: "${SLACK_API_TOKEN}"
   service:
     type: NodePort
@@ -74,7 +74,7 @@ frontend:
     replicas: 1
     image:
       repository: 709825985650.dkr.ecr.us-east-1.amazonaws.com/iba-group/visual-flow
-      tag: 0.9.9-frontend
+      tag: 0.9.10-frontend
       pullPolicy: Always
     variables:
       STRATEGY: GITHUB
