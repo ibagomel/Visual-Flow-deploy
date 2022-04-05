@@ -7,12 +7,12 @@ vf-app:
         SLACK_API_TOKEN: ""
     configFile:
       superusers:
-        - your-github-nickname
+        - chetkhatri
   frontend:
     deployment:
       secretVariables:
-        GITHUB_APP_ID: 
-        GITHUB_APP_SECRET: 
+        GITHUB_APP_ID: 4dcdc11a89868e6c8312
+        GITHUB_APP_SECRET: 5258e1cd56eafe8b0e5e16330f9f0e885b9817e4
 vf-secrets:
   install: true
 argo:
