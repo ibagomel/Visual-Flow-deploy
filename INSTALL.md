@@ -18,7 +18,7 @@ Visual Flow should be installed on an Kubernetes cluster, if you do not have it,
 
 1. Install the ingress-nginx with the following command:
 
-    `kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/cloud/deploy.yaml`
+    `kubectl create -f  https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.2/deploy/static/provider/cloud/deploy.yaml`
 
 ## Install Visual Flow
 
